@@ -1,8 +1,16 @@
+#!/bin/sh
+if [[ "$#" -lt "1" || "$#" -gt "2" ]]; then
+    echo -e "Usage:\n"\
+          "\t$0 <source file path> [destination file path]\n\n"\
+          "\tsource and destination paths should within git repositories\n"\
+          "\twithout dest file path given the file will be created into the current directory"
+    exit -1
+fi
 #set -x
 src_abs=$(readlink -e $1)
 dst_root=$(git rev-parse --show-toplevel)
 dst=${2-$(basename $src_abs)}
-dst_abs=$(readlink -f $dst)
+dst_abs=$(readlink -f $dst)  # the destination path should be existent except the file
 if [ -z "$dst_abs" ]; then echo mkdir -p $(dirname $dst); exit; fi
 dst_rel=$(echo $dst_abs | sed "s#$dst_root/##g")
 pushd $(dirname $src_abs) > /dev/null
