@@ -1,11 +1,13 @@
 # REQUIRES:
 # yinst i ports/pv -br test
+# brew install pv
 # set -x
 src=($(echo $1 | sed 's/:/ /g'))
 dst=($(echo $2 | sed 's/:/ /g'))
 s_host=${src[0]}
 s_file=${src[1]}
-s_dir=$(echo $s_file | gawk '{ print gensub(/[^\/]*$/,"", $0) }')
+# s_dir=$(echo $s_file | gawk '{ print gensub(/[^\/]*$/,"", $0) }')
+s_dir=$(echo $s_file | sed -e 's_\([^\/]*\/\)[^\/]*$_\1_g')
 fn=${s_file:${#s_dir}}
 d_host=${dst[0]}
 d_file=$(echo "${dst[1]}/$fn" | sed 's:^/::g')
