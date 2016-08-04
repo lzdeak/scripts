@@ -7,7 +7,7 @@ class Node:
   def __init__(self):
       self.parent = None
       self.childs = []  # list of ids
-      self.defined = False
+      self.defined = 0
 
 tree = {}
 
@@ -25,7 +25,7 @@ for line in sys.stdin:
         node = tree[s_id]
     if node.defined:
         print "ERR fact.defined", s_id
-    node.defined = True
+    node.defined = 1
     node.parent = p_id
     tree[s_id] = node
 
@@ -44,27 +44,45 @@ while tree[root].parent in tree:
 
 maxlevel = 0
 childs = {}
+sum_accessed = 0
 
-def descend(id, level):
+def descend(id, level, access):
     # print "descend", id, taxo[id].childs
     global maxlevel
     global childs
+    global sum_accessed
+
     if level > maxlevel:
         maxlevel = level
     node = tree[id]
-    if not node.defined:
+    if 0 == node.defined:
         print "ERR: not defined ", id
-
+        access = False
     nchilds = len(node.childs)
     childs[nchilds] = 1 if nchilds not in childs else childs[nchilds] + 1
     for ch in node.childs:
-        descend(ch, level + 1)
+        if ch in tree:
+          if access:
+            sum_accessed += 1
+          descend(ch, level + 1, access)
 
 
-descend(root, 0)
+tree[root].defined = 1
+descend(root, 0, True)
+
+tree[root].defined = 0
+sum_defined = sum([x.defined for x in tree.values()])
+
+print "tree elements defined: ", sum_defined
+print "elements accessible from root: ", sum_accessed
+
+if sum_accessed != sum_defined:
+    print "ERR: full tree size:", sum_defined, " accessible from the root:", sum_accessed
+
 print "root: ", root #, taxo['20072770'].childs
 print "depth: ", maxlevel
 print "leafs: ", 0 if 0 not in childs else childs[0]
 print "nof childs distribution: ", childs
+
 # import pprint
 # pprint.pprint(childs)
