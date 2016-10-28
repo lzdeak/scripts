@@ -5,10 +5,12 @@
 src=($(echo $1 | sed 's/:/ /g'))
 dst=($(echo $2 | sed 's/:/ /g'))
 s_host=${src[0]}
-s_file=${src[1]}
-# s_dir=$(echo $s_file | gawk '{ print gensub(/[^\/]*$/,"", $0) }')
-s_dir=$(echo $s_file | sed -e 's_\([^\/]*\/\)[^\/]*$_\1_g')
-fn=${s_file:${#s_dir}}
+s_path=${src[1]}
+# s_dir=$(echo $s_path | gawk '{ print gensub(/[^\/]*$/,"", $0) }')
+#s_dir=$(echo $s_path | sed -e 's:\([^\/]*\/\)[^\/]*$:\1:g')
+s_dir=$(dirname $s_path)
+#fn=${s_path:${#s_dir}}
+fn=$(basename $s_path)
 d_host=${dst[0]}
 d_file=$(echo "${dst[1]}/$fn" | sed 's:^/::g')
 if [ -n "${dst[1]}" ]; then
@@ -17,11 +19,14 @@ if [ -n "${dst[1]}" ]; then
 fi
 if [ -n "$s_dir" ]; then
     cd_s_dir="cd $s_dir;"
-    echo $s_dir;
+    # echo $s_dir;
 fi
-
-# echo -en "\t\t\t\t${s_host}:${s_file} \t -> \t ${d_host}:${d_file} \t\r"
+# echo -en "\t\t\t\t${s_host}:${s_path} \t -> \t ${d_host}:${d_file} \t\r"
 # set -x
-ssh $s_host "$cd_s_dir find . -regex \".*$fn\" -maxdepth 1 | tee /dev/stderr | tar -cf - -T -" \
-| pv -t -b -r -N "${s_host}:${s_file}    ->    ${d_host}:${d_file}   " | \
+ssh $s_host "$cd_s_dir find . -regex \".*$fn\" -maxdepth 1 \
+| tee /dev/stderr \
+| tar -cf - -T -" \
+| pv -t -b -r -N "${s_host}:${s_path}    ->    ${d_host}:${d_file}   " | \
 ssh $d_host "$make_d_dir tar -xf - $tar_d_dir"
+err=$?
+if [ "$err" -ne "0" ]; then echo "err $err"; fi
