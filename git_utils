@@ -1,0 +1,20 @@
+
+DEV_HOST=weightcreate.corp.gq1.yahoo.com
+
+function scp_src() {
+  f=`echo src/java/$1 | sed 's:src/java/src/java/:src/java/:g'`
+  scp $f ${DEV_HOST}:ybp/be/$f
+}
+
+function scp_each() {
+  git status | awk '/modified:/{ print $2 }' | while read f; do scp_src $f; done
+}
+
+function scp_all() {
+  git status | awk '/modified:/{ print $2 }' \
+  | tee /dev/stderr \
+  | tar -cf - -T - \
+  | pv -t -b -r \
+  | ssh -A ${DEV_HOST} "cd ~/ybp/be; tar -xf -"
+}
+
