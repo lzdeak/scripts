@@ -25,8 +25,8 @@ fi
 # set -x
 ssh $s_host "$cd_s_dir find . -regex \".*$fn\" -maxdepth 1 \
 | tee /dev/stderr \
-| tar -cf - -T -" \
+| tar -cpf - -T -" \
 | pv -t -b -r -N "${s_host}:${s_path}    ->    ${d_host}:${d_file}   " | \
-ssh $d_host "$make_d_dir tar -xf - $tar_d_dir"
+ssh $d_host "$make_d_dir tar -xpf - $tar_d_dir"
 err=$?
 if [ "$err" -ne "0" ]; then echo "err $err"; fi
