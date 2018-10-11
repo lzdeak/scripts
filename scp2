@@ -23,7 +23,7 @@ if [ -n "$s_dir" ]; then
 fi
 # echo -en "\t\t\t\t${s_host}:${s_path} \t -> \t ${d_host}:${d_file} \t\r"
 # set -x
-ssh $s_host "$cd_s_dir find . -regex \".*$fn\" -maxdepth 1 \
+ssh $s_host "$cd_s_dir find . -name \"$fn\" -maxdepth 1 \
 | tee /dev/stderr \
 | tar -cpf - -T -" \
 | pv -t -b -r -N "${s_host}:${s_path}    ->    ${d_host}:${d_file}   " | \
